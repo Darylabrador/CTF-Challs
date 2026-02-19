@@ -1,0 +1,11 @@
+{
+  "name": "url-preview-sbk",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "commonjs",
+  "dependencies": {
+    "axios": "^1.7.4",
+    "cheerio": "^1.0.0-rc.12",
+    "express": "^4.19.2"
+  }
+}

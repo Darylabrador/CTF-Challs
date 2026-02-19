@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>URL Preview</title>
+    <!-- Created by Shb4d from SOOBIK Solutions -->
+     
+    <style>
+      :root{
+        --bg1:#0b1220;
+        --bg2:#0f1b33;
+        --card: rgba(255,255,255,.08);
+        --border: rgba(255,255,255,.12);
+        --text:#e9eefc;
+        --muted: rgba(233,238,252,.72);
+        --accent:#7c5cff;
+        --accent2:#34d399;
+        --shadow: 0 20px 60px rgba(0,0,0,.45);
+        --radius: 16px;
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      }
+
+      *{ box-sizing:border-box; }
+      body{
+        margin:0;
+        font-family: var(--sans);
+        color: var(--text);
+        background:
+          radial-gradient(1200px 600px at 15% 10%, rgba(124,92,255,.35), transparent 55%),
+          radial-gradient(900px 500px at 85% 25%, rgba(52,211,153,.20), transparent 55%),
+          linear-gradient(160deg, var(--bg1), var(--bg2));
+        min-height:100vh;
+        display:grid;
+        place-items:center;
+        padding: 32px 16px;
+      }
+
+      .wrap{
+        width:min(980px, 100%);
+      }
+
+      header{
+        display:flex;
+        align-items:flex-start;
+        justify-content:space-between;
+        gap: 16px;
+        margin-bottom: 18px;
+      }
+
+      .title{
+        display:flex;
+        flex-direction:column;
+        gap: 6px;
+      }
+
+      h1{
+        margin:0;
+        font-size: clamp(22px, 3vw, 32px);
+        letter-spacing: .2px;
+      }
+
+      .subtitle{
+        margin:0;
+        color: var(--muted);
+        line-height: 1.4;
+      }
+
+      .card{
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow:hidden;
+        backdrop-filter: blur(10px);
+      }
+
+      .card-inner{ padding: 18px; }
+
+      form{
+        display:grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+      }
+
+      .field{
+        position:relative;
+      }
+
+      input{
+        width:100%;
+        padding: 14px 14px 14px 44px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,.14);
+        background: rgba(10,14,24,.35);
+        color: var(--text);
+        outline: none;
+        transition: border-color .15s ease, box-shadow .15s ease, transform .05s ease;
+      }
+      input::placeholder{ color: rgba(233,238,252,.45); }
+      input:focus{
+        border-color: rgba(124,92,255,.65);
+        box-shadow: 0 0 0 4px rgba(124,92,255,.18);
+      }
+
+      .icon{
+        position:absolute;
+        top:50%; left: 14px;
+        transform: translateY(-50%);
+        width:18px; height:18px;
+        opacity:.9;
+        color: rgba(233,238,252,.75);
+      }
+
+      button{
+        padding: 12px 16px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,.14);
+        background: linear-gradient(135deg, rgba(124,92,255,.95), rgba(52,211,153,.75));
+        color: #0b1020;
+        font-weight: 700;
+        letter-spacing: .2px;
+        cursor:pointer;
+        transition: transform .05s ease, filter .15s ease, opacity .15s ease;
+        min-width: 120px;
+      }
+      button:hover{ filter: brightness(1.05); }
+      button:active{ transform: translateY(1px); }
+      button:disabled{
+        opacity:.6;
+        cursor:not-allowed;
+      }
+
+      .row{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:12px;
+        margin-top: 12px;
+      }
+
+      .hint{
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .actions{
+        display:flex;
+        gap:10px;
+        align-items:center;
+      }
+
+      .ghost{
+        border: 1px solid rgba(255,255,255,.14);
+        background: rgba(255,255,255,.06);
+        color: var(--text);
+        font-weight: 600;
+        padding: 10px 12px;
+        min-width:auto;
+      }
+
+      .divider{
+        height:1px;
+        background: rgba(255,255,255,.10);
+      }
+
+      .output-head{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap: 12px;
+        padding: 14px 18px;
+      }
+
+      .badge{
+        font-size:12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,.14);
+        color: var(--muted);
+        background: rgba(255,255,255,.05);
+      }
+
+      pre{
+        margin:0;
+        padding: 16px 18px;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.5;
+        color: rgba(233,238,252,.92);
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: rgba(0,0,0,.22);
+        max-height: 46vh;
+        overflow:auto;
+      }
+
+      .status{
+        display:inline-flex;
+        align-items:center;
+        gap:10px;
+      }
+
+      .spinner{
+        width:14px; height:14px;
+        border-radius:999px;
+        border: 2px solid rgba(233,238,252,.25);
+        border-top-color: rgba(233,238,252,.85);
+        animation: spin .8s linear infinite;
+        display:none;
+      }
+
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      .ok{ border-color: rgba(52,211,153,.35) !important; }
+      .err{ border-color: rgba(248,113,113,.45) !important; }
+
+      @media (max-width: 620px){
+        header{ flex-direction:column; align-items:flex-start; }
+        form{ grid-template-columns: 1fr; }
+        button{ width:100%; }
+        .row{ flex-direction:column; align-items:flex-start; }
+        .actions{ width:100%; }
+        .actions .ghost{ width:100%; }
+      }
+
+      .pwrap{
+        padding: 14px 18px 0 18px;
+      }
+
+      .p-top{
+        display:flex;
+        flex-direction:column;
+        gap:6px;
+        padding: 12px 12px;
+        border: 1px solid rgba(255,255,255,.12);
+        background: rgba(255,255,255,.04);
+        border-radius: 14px;
+      }
+
+      .p-title{
+        font-weight: 800;
+        letter-spacing: .2px;
+        font-size: 16px;
+      }
+
+      .p-sub a{
+        color: rgba(233,238,252,.86);
+        text-decoration: none;
+      }
+      .p-sub a:hover{ text-decoration: underline; }
+
+      .p-desc{
+        margin-top: 10px;
+        color: rgba(233,238,252,.78);
+        line-height: 1.45;
+      }
+
+      .p-meta{
+        display:flex;
+        flex-wrap:wrap;
+        gap:8px;
+        margin-top: 10px;
+      }
+
+      .p-chip{
+        font-size:12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,.14);
+        color: rgba(233,238,252,.75);
+        background: rgba(255,255,255,.05);
+      }
+
+      .p-sn-head, .p-raw-head{
+        margin-top: 12px;
+        color: rgba(233,238,252,.78);
+        font-size: 12px;
+        letter-spacing: .2px;
+        text-transform: uppercase;
+      }
+
+      .p-sn{
+        margin-top: 8px;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,.10);
+        background: rgba(0,0,0,.18);
+        max-height: 18vh;
+        overflow:auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.5;
+        color: rgba(233,238,252,.92);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="title">
+          <h1>URL Preview</h1>
+          <p class="subtitle">Paste a URL and get a preview.</p>
+        </div>
+      </header>
+
+      <section class="card">
+        <div class="card-inner">
+          <form id="f" autocomplete="off">
+            <div class="field">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M10 13a5 5 0 0 1 0-7l1-1a5 5 0 0 1 7 7l-1 1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M14 11a5 5 0 0 1 0 7l-1 1a5 5 0 0 1-7-7l1-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+              <input
+                id="u"
+                inputmode="url"
+                placeholder="https://google.com"
+                aria-label="URL"
+                required
+              />
+            </div>
+            <button id="btn" type="submit">
+              <span class="status">
+                <span class="spinner" id="sp"></span>
+                <span id="btnText">Preview</span>
+              </span>
+            </button>
+          </form>
+
+          <div class="row">
+            <div class="hint">Tip: <kbd>Ctrl</kbd> / <kbd>⌘</kbd> + <kbd>V</kbd> to paste quickly.</div>
+            <div class="actions">
+              <button class="ghost" id="copyBtn" type="button">Copy result</button>
+              <button class="ghost" id="clearBtn" type="button">Clear</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="output-head">
+          <strong>Result</strong>
+          <span class="badge" id="meta">—</span>
+        </div>
+
+        <div id="pwrap" class="pwrap" hidden>
+          <div class="p-top">
+            <div class="p-title" id="ptitle">—</div>
+            <div class="p-sub">
+              <a id="purl" href="#" target="_blank" rel="noopener noreferrer">—</a>
+            </div>
+          </div>
+
+          <div class="p-desc" id="pdesc">—</div>
+
+          <div class="p-meta">
+            <span class="p-chip" id="pctype">—</span>
+            <span class="p-chip" id="pstatus">—</span>
+          </div>
+
+          <div class="p-sn-head">Snippet</div>
+          <pre class="p-sn" id="psn">—</pre>
+
+          <div class="p-raw-head">Raw output</div>
+        </div>
+
+        <pre id="out">Enter a URL and click “Preview”.</pre>
+      </section>
+    </div>
+
+    <script>
+      const f = document.getElementById("f");
+      const u = document.getElementById("u");
+      const out = document.getElementById("out");
+      const meta = document.getElementById("meta");
+      const btn = document.getElementById("btn");
+      const sp = document.getElementById("sp");
+      const btnText = document.getElementById("btnText");
+      const copyBtn = document.getElementById("copyBtn");
+      const clearBtn = document.getElementById("clearBtn");
+
+      const pwrap = document.getElementById("pwrap");
+      const ptitle = document.getElementById("ptitle");
+      const pdesc = document.getElementById("pdesc");
+      const purl = document.getElementById("purl");
+      const psn = document.getElementById("psn");
+      const pctype = document.getElementById("pctype");
+      const pstatus = document.getElementById("pstatus");
+
+      let lastCopy = "";
+
+      const setLoading = (v) => {
+        btn.disabled = v;
+        sp.style.display = v ? "inline-block" : "none";
+        btnText.textContent = v ? "Loading" : "Preview";
+      };
+
+      const setState = (kind) => {
+        u.classList.remove("ok", "err");
+        if (kind) u.classList.add(kind);
+      };
+
+      f.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const url = u.value.trim();
+        if (!url) return;
+
+        setLoading(true);
+        setState(null);
+        meta.textContent = "Request in progress…";
+        out.textContent = "";
+        pwrap.hidden = true;
+        lastCopy = "";
+
+        try {
+          const t0 = performance.now();
+          const r = await fetch("/api/preview", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+          });
+
+          const text = await r.text();
+          const ms = Math.round(performance.now() - t0);
+
+          lastCopy = text || "(empty response)";
+
+          let data = null;
+          try { data = JSON.parse(text); } catch {}
+
+          if (data && typeof data === "object" && !data.error) {
+            const pretty = JSON.stringify(data, null, 2);
+            out.textContent = pretty;
+            lastCopy = pretty;
+
+            const finalUrl = (data.final_url || data.requested_url || "").toString();
+            const title = (data.title || "").toString().trim() || "Untitled";
+            const desc = (data.description || "").toString().trim() || "—";
+            const snip = (data.snippet || "").toString().trim() || "—";
+            const ctype = (data.content_type || "—").toString();
+            const st = (data.status ?? r.status).toString();
+
+            ptitle.textContent = title;
+            pdesc.textContent = desc;
+
+            purl.textContent = finalUrl || "—";
+            purl.href = finalUrl || "#";
+
+            psn.textContent = snip;
+
+            pctype.textContent = ctype;
+            pstatus.textContent = `status ${st}`;
+
+            pwrap.hidden = false;
+
+            meta.textContent = `${r.status} • ${ms} ms`;
+            setState(r.ok ? "ok" : "err");
+          } else {
+            out.textContent = text || "(empty response)";
+            meta.textContent = `${r.status} • ${ms} ms`;
+            setState(r.ok ? "ok" : "err");
+          }
+        } catch (err) {
+          const msg = "Network error: " + (err?.message ?? String(err));
+          out.textContent = msg;
+          lastCopy = msg;
+          meta.textContent = "Error";
+          setState("err");
+        } finally {
+          setLoading(false);
+        }
+      });
+
+      copyBtn.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(lastCopy || out.textContent);
+          meta.textContent = "Copied";
+          setTimeout(() => (meta.textContent = "—"), 1200);
+        } catch {
+          meta.textContent = "Copy failed";
+        }
+      });
+
+      clearBtn.addEventListener("click", () => {
+        u.value = "";
+        out.textContent = "Enter a URL and click “Preview”.";
+        meta.textContent = "—";
+        pwrap.hidden = true;
+        lastCopy = "";
+        setState(null);
+        u.focus();
+      });
+
+      u.focus();
+    </script>
+  </body>
+</html>

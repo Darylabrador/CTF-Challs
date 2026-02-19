@@ -1,0 +1,47 @@
+version: "3.9"
+
+x-hardening: &hardening
+  restart: unless-stopped
+  read_only: true
+  tmpfs:
+    - /tmp
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+
+services:
+  web:
+    build: .
+    image: shadow-preview:latest
+    <<: *hardening
+    init: true
+    ports:
+      - "8080:8080"
+    environment:
+      SERVICE: web
+      NODE_ENV: production
+      PREVIEW_TIMEOUT_MS: "5000"
+      MAX_BYTES: "262144"
+    depends_on:
+      - internal
+    networks:
+      - frontend
+      - backend
+
+  internal:
+    image: shadow-preview:latest
+    <<: *hardening
+    expose:
+      - "9000"
+    environment:
+      SERVICE: internal
+    env_file:
+      - ./.env
+    networks:
+      - backend
+
+networks:
+  frontend: {}
+  backend:
+    internal: true
